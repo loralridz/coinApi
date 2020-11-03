@@ -1,18 +1,20 @@
 //fetch data
 async function main() {
     const res = await fetch("api/current");
-    const data = await res.json();
+    const datajson = await res.json();
 
     data.datasets[1].data = [];
     data.datasets[0].data = [];
     data.labels = [];
 
     for (let index = 0; index < datajson.length; index++) {
+
         const dated = new Date(datajson[index][0] * 1000).toISOString().split("T")[0];
         const DateFormat = dated.toLocaleString();
-        data.labels.push(DateFormat)
-        data.datasets[0].data.push(datajson[index][1])
-        data.datasets[1].data.push(datajson[index][4])
+        data.labels.push(DateFormat);
+        data.datasets[0].data.push(datajson[index][1]);
+        data.datasets[1].data.push(datajson[index][4]);
+
     }
     myChart.update()
 }
@@ -22,8 +24,6 @@ const end = document.getElementById("end");
 
 //for historic data
 async function getHistory() {
-
-    console.log("triggred")
 
     const startMS = new Date(start.value).getTime();
     const startDate = parseInt((startMS / 1000).toFixed(0));
