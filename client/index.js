@@ -1,13 +1,20 @@
-//data for graph plot
-const priceStart = [];
-const priceEnd = [];
-let date = [];
-
 //fetch data
 async function main() {
     const res = await fetch("api/current");
-    const jsonData = await res.json();
-    getData(jsonData);
+    const data = await res.json();
+
+    data.datasets[1].data = [];
+    data.datasets[0].data = [];
+    data.labels = [];
+
+    for (let index = 0; index < datajson.length; index++) {
+        const dated = new Date(datajson[index][0] * 1000).toISOString().split("T")[0];
+        const DateFormat = dated.toLocaleString();
+        data.labels.push(DateFormat)
+        data.datasets[0].data.push(datajson[index][1])
+        data.datasets[1].data.push(datajson[index][4])
+    }
+    myChart.update()
 }
 
 const start = document.getElementById("start");
@@ -16,7 +23,8 @@ const end = document.getElementById("end");
 //for historic data
 async function getHistory() {
 
-    date = [];
+    console.log("triggred")
+
     const startMS = new Date(start.value).getTime();
     const startDate = parseInt((startMS / 1000).toFixed(0));
 
@@ -25,49 +33,37 @@ async function getHistory() {
 
     const url = `api/history?start=${startDate}&end=${endDate}`;
     const res = await fetch(url);
-    const data = await res.json();
-    date.push(startDate);
-    date.push(endDate);
-    data.forEach(row => {
 
-        priceStart.push(row[1])
-        priceEnd.push(row[4])
+    const datajson = await res.json();
+
+    data.datasets[1].data = [];
+    data.datasets[0].data = [];
+    data.labels = [];
+
+    for (let index = 0; index < datajson.length; index++) {
+        const dated = new Date(datajson[index][0] * 1000).toISOString().split("T")[0];
+        const DateFormat = dated.toLocaleString();
+        data.labels.push(DateFormat)
+        data.datasets[0].data.push(datajson[index][1])
+        data.datasets[1].data.push(datajson[index][4])
 
 
-    });
-
-}
-
-//get arrays to plot graph
-async function getData(jsonData) {
-
-    const data = await jsonData;
-    let n = 1;
-    data.forEach(row => {
-        priceStart.push(row[1])
-        priceEnd.push(row[4])
-        if (n == 1 || n == 10) {
-            const dated = new Date(row[0] * 1000).toISOString().split("T")[0];
-            const DateFormat = dated.toLocaleString();
-            date.push(DateFormat);
-        }
-        n++;
-
-    });
+    }
+    myChart.update();
 
 }
-
 
 // Graph Plot
-var canvas = document.getElementById("myChart");
-var ctx = canvas.getContext('2d');
+let canvas = document.getElementById("myChart");
+let ctx = canvas.getContext('2d');
+
 
 // Global Options:
 Chart.defaults.global.defaultFontColor = 'black';
 Chart.defaults.global.defaultFontSize = 16;
 
 var data = {
-    labels: date,
+    labels: [4],
     datasets: [{
             label: "Price Open",
             fill: false,
@@ -87,7 +83,7 @@ var data = {
             pointHoverBorderWidth: 2,
             pointRadius: 4,
             pointHitRadius: 10,
-            data: priceEnd,
+            data: [2],
             spanGaps: false,
         }, {
             label: "Price Close",
@@ -108,7 +104,7 @@ var data = {
             pointHoverBorderWidth: 2,
             pointRadius: 4,
             pointHitRadius: 10,
-            data: priceStart,
+            data: [1],
             spanGaps: true,
         }
 
@@ -116,7 +112,7 @@ var data = {
 };
 
 // options for line graph 
-var options = {
+let options = {
     responsive: true,
     layout: {
         padding: {
@@ -142,10 +138,11 @@ var options = {
         }]
     }
 };
-
-// Chart declaration:
-var myBarChart = new Chart(ctx, {
+var config = {
     type: 'line',
     data: data,
     options: options
-});
+};
+
+// Chart declaration:
+var myChart = new Chart(ctx, config);
